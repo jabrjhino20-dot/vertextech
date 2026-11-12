@@ -422,7 +422,15 @@
         </div>
       </div>
       <div class="convergencia__escenario">
-        <div class="contenedor convergencia__grid">
+        <!-- Fondos de video por escena (solo escritorio con animaciones). Carga diferida desde js/main.js:
+             ningún MP4 se descarga hasta que la sección está cerca; solo se reproduce el de la escena activa. -->
+        <div class="convergencia__fondos" aria-hidden="true">
+          <div class="convergencia__fondo"><video muted loop playsinline preload="none" data-poster="video/equipos-poster.jpg" data-src="video/equipos.mp4" aria-hidden="true" tabindex="-1"></video></div>
+          <div class="convergencia__fondo"><video muted loop playsinline preload="none" data-poster="video/soporte-poster.jpg" data-src="video/soporte.mp4" aria-hidden="true" tabindex="-1"></video></div>
+          <div class="convergencia__fondo"><video muted loop playsinline preload="none" data-poster="video/ia-poster.jpg" data-src="video/ia.mp4" aria-hidden="true" tabindex="-1"></video></div>
+          <!-- Capa índigo: sólida bajo el texto y degradada a transparente a la derecha -->
+          <div class="convergencia__capa"></div>
+        </div>    <div class="contenedor convergencia__grid">
           <div class="convergencia__progreso" aria-hidden="true">
             <span class="convergencia__riel"><span class="convergencia__barra"></span></span>
             <ol><li class="activo">Equipos</li><li>Soporte y protección</li><li>Inteligencia artificial</li></ol>
@@ -444,16 +452,8 @@
                 <a class="btn btn--primario" href="tienda.html">Explorar la tienda</a>
               </div>
               <div class="escena__visual" aria-hidden="true">
-                <div class="orbe">
-                  <span class="orbe__anillo"></span><span class="orbe__anillo orbe__anillo--2"></span><span class="orbe__anillo orbe__anillo--3"></span>
-                  <span class="orbe__nucleo"><svg class="icono"><use href="#i-laptop"/></svg></span>
-                  <span class="orbe__orbita">
-                    <span class="orbe__chip" style="--a:0"><span>Laptops</span></span>
-                    <span class="orbe__chip" style="--a:1"><span>Servidores</span></span>
-                    <span class="orbe__chip" style="--a:2"><span>Impresoras</span></span>
-                    <span class="orbe__chip" style="--a:3"><span>Redes</span></span>
-                  </span>
-                </div>
+                <!-- Imagen de la tarjeta (móvil y sin animaciones). En escritorio se usa el video de fondo. -->
+                <img class="escena__poster" src="video/equipos-poster.jpg" alt="" width="1280" height="720" loading="lazy" decoding="async">
               </div>
             </li>
             <!-- Escena 2 -->
@@ -472,16 +472,8 @@
                 <a class="btn btn--primario" href="servicios.html">Ver servicios</a>
               </div>
               <div class="escena__visual" aria-hidden="true">
-                <div class="orbe">
-                  <span class="orbe__anillo"></span><span class="orbe__anillo orbe__anillo--2"></span><span class="orbe__anillo orbe__anillo--3"></span>
-                  <span class="orbe__nucleo"><svg class="icono"><use href="#i-escudo"/></svg></span>
-                  <span class="orbe__orbita">
-                    <span class="orbe__chip" style="--a:0"><span>Soporte remoto</span></span>
-                    <span class="orbe__chip" style="--a:1"><span>Mantenimiento</span></span>
-                    <span class="orbe__chip" style="--a:2"><span>Redes y wifi</span></span>
-                    <span class="orbe__chip" style="--a:3"><span>Garantía</span></span>
-                  </span>
-                </div>
+                <!-- Imagen de la tarjeta (móvil y sin animaciones). En escritorio se usa el video de fondo. -->
+                <img class="escena__poster" src="video/soporte-poster.jpg" alt="" width="1280" height="720" loading="lazy" decoding="async">
               </div>
             </li>
             <!-- Escena 3 -->
@@ -498,16 +490,8 @@
                 <a class="btn btn--primario" href="soluciones-ia.html">Ver soluciones con IA</a>
               </div>
               <div class="escena__visual" aria-hidden="true">
-                <div class="orbe">
-                  <span class="orbe__anillo"></span><span class="orbe__anillo orbe__anillo--2"></span><span class="orbe__anillo orbe__anillo--3"></span>
-                  <span class="orbe__nucleo"><svg class="icono"><use href="#i-ia"/></svg></span>
-                  <span class="orbe__orbita">
-                    <span class="orbe__chip" style="--a:0"><span>Chatbots</span></span>
-                    <span class="orbe__chip" style="--a:1"><span>Automatización</span></span>
-                    <span class="orbe__chip" style="--a:2"><span>Reportes</span></span>
-                    <span class="orbe__chip" style="--a:3"><span>Capacitación</span></span>
-                  </span>
-                </div>
+                <!-- Imagen de la tarjeta (móvil y sin animaciones). En escritorio se usa el video de fondo. -->
+                <img class="escena__poster" src="video/ia-poster.jpg" alt="" width="1280" height="720" loading="lazy" decoding="async">
               </div>
             </li>
           </ol>

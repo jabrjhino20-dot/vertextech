@@ -362,7 +362,10 @@
        =================================================================== -->
 
   <main id="contenido" tabindex="-1">
-    <section class="hero-pagina hero-pagina--ia" aria-labelledby="titulo-ia">
+    <section class="hero-pagina hero-pagina--ia hero-pagina--video" aria-labelledby="titulo-ia">
+      <!-- Video decorativo de fondo: el MP4 lo asigna js/main.js (no se descarga con movimiento reducido ni ahorro de datos; queda el poster) -->
+      <video class="hero-pagina__video" autoplay muted loop playsinline preload="metadata" poster="video/ia-poster.jpg" data-src="video/ia.mp4" aria-hidden="true" tabindex="-1"></video>
+      <div class="hero-pagina__capa" aria-hidden="true"></div>
       <div class="contenedor">
         <p class="antetitulo">Soluciones con IA · Nuestro diferencial</p>
         <h1 id="titulo-ia">Inteligencia artificial útil, <em>a la medida de tu pyme.</em></h1>

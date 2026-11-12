@@ -16,6 +16,7 @@
    12. Aparición al hacer scroll y contadores
    13. Formularios con envío por WhatsApp
    14. Tarjeta de producto (render compartido)
+   15. Videos decorativos (carga diferida, un solo video a la vez)
    ===================================================================== */
 
 /* ===== 1. CONFIG ===== */
@@ -646,6 +647,59 @@ const CONFIG = {
         '</div>' +
       '</div></article>';
   };
+
+  /* ===== 15. VIDEOS DECORATIVOS =====
+     Todo <video data-src="..."> pasa por aquí:
+     · prefers-reduced-motion o ahorro de datos → solo poster, 0 descargas de MP4.
+     · Carga diferida: el MP4 se asigna cuando el video está a menos de 400 px de la pantalla
+       (los que están ocultos con display:none, p. ej. en móvil, nunca se cargan).
+     · Nunca más de un video reproduciéndose: se elige el más visible entre los permitidos
+       (data-activo="false" lo excluye; lo usa la sección Convergencia del inicio). */
+  (function videos() {
+    const lista = $$('video[data-src]');
+    VT.videos = { recalcular: () => {} };
+    if (!lista.length) return;
+    const ahorroDatos = !!(navigator.connection && navigator.connection.saveData);
+    if (VT.reducirMovimiento() || ahorroDatos) {
+      lista.forEach((v) => { v.removeAttribute('autoplay'); v.preload = 'none'; });
+      return;
+    }
+    const visibilidad = new Map();
+    const permitido = (v) => v.dataset.activo !== 'false';
+    function elegir() {
+      let mejor = null, max = 0;
+      lista.forEach((v) => {
+        const r = visibilidad.get(v) || 0;
+        if (v.getAttribute('src') && permitido(v) && r > max) { max = r; mejor = v; }
+      });
+      lista.forEach((v) => { if (v !== mejor && !v.paused) v.pause(); });
+      if (mejor && mejor.paused && !doc.hidden) { const p = mejor.play(); if (p && p.catch) p.catch(() => { /* bloqueado: queda el poster */ }); }
+    }
+    VT.videos.recalcular = elegir;
+    function cargar(v) {
+      if (v.getAttribute('src')) return;
+      if (v.dataset.poster && !v.getAttribute('poster')) v.setAttribute('poster', v.dataset.poster);
+      v.muted = true; // requisito para reproducción automática en móviles
+      v.src = v.dataset.src;
+    }
+    const ioCarga = new IntersectionObserver((entradas) => {
+      entradas.forEach((en) => { if (en.isIntersecting) { cargar(en.target); ioCarga.unobserve(en.target); } });
+      elegir();
+    }, { rootMargin: '400px 0px' });
+    const ioVista = new IntersectionObserver((entradas) => {
+      entradas.forEach((en) => visibilidad.set(en.target, en.isIntersecting ? Math.max(en.intersectionRatio, 0.01) : 0));
+      elegir();
+    }, { threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] });
+    lista.forEach((v) => {
+      v.muted = true;
+      ioCarga.observe(v);
+      ioVista.observe(v);
+      // Si alguno arranca por su cuenta (autoplay), los demás se pausan
+      v.addEventListener('play', () => lista.forEach((o) => { if (o !== v && !o.paused) o.pause(); }));
+      v.addEventListener('loadeddata', elegir);
+    });
+    doc.addEventListener('visibilitychange', () => { if (doc.hidden) lista.forEach((v) => v.pause()); else elegir(); });
+  })();
 
   /* Al llegar con un ancla (servicios.html#seguridad), se desplaza hasta ella con el offset del header.
      Las pestañas con hash (rubros) se gestionan en iniciarPestanas. */

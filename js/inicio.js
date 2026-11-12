@@ -15,22 +15,7 @@
   const $ = VT.$, $$ = VT.$$;
   const reducir = VT.reducirMovimiento();
 
-  /* ===== 0. VIDEO DEL HÉROE =====
-     Solo se carga si no hay movimiento reducido ni ahorro de datos; si no, queda el poster.
-     Se pausa cuando el héroe sale de pantalla para no gastar batería ni CPU. */
-  (function videoHeroe() {
-    const video = $('.hero-inicio__video');
-    if (!video) return;
-    const ahorroDatos = !!(navigator.connection && navigator.connection.saveData);
-    if (reducir || ahorroDatos) { video.removeAttribute('autoplay'); return; }
-    video.muted = true; // requisito para reproducción automática en móviles
-    video.src = video.dataset.src;
-    const reproducir = () => { const p = video.play(); if (p && p.catch) p.catch(() => { /* bloqueado: queda el poster */ }); };
-    reproducir();
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver((en) => { if (en[0].isIntersecting) reproducir(); else video.pause(); }, { threshold: 0 }).observe(video.parentElement);
-    }
-  })();
+  /* Los videos (héroe y escenas) los gestiona js/main.js, bloque 15. */
 
   /* ===== 1. PARTÍCULAS (solo escritorio, sutiles sobre el video) ===== */
   (function particulas() {
@@ -184,26 +169,69 @@
     const escenasEl = $$('.escena', seccion);
     const etiquetas = $$('.convergencia__progreso li', seccion);
     const mm = gsap.matchMedia();
+    const fondos = $$('.convergencia__fondo', seccion);
+    const videosFondo = fondos.map((f) => f.querySelector('video'));
     mm.add('(min-width: 1024px)', () => {
       seccion.classList.add('convergencia--pin');
       const n = escenasEl.length;
       gsap.set(escenasEl.slice(1), { opacity: 0, y: 80 });
-      const marcar = (idx) => etiquetas.forEach((li, i) => li.classList.toggle('activo', i === idx));
+      gsap.set(fondos.slice(1), { opacity: 0 });
+      // Solo el video de la escena activa puede reproducirse (el resto queda pausado por js/main.js)
+      let activa = -1;
+      const marcar = (idx) => {
+        etiquetas.forEach((li, i) => li.classList.toggle('activo', i === idx));
+        if (idx === activa) return;
+        activa = idx;
+        videosFondo.forEach((v, i) => { if (v) v.dataset.activo = String(i === idx); });
+        VT.videos.recalcular();
+      };
+      marcar(0);
+      // Ajuste a la escena más cercana cuando el scroll se detiene. Se hace con Lenis (y no con el "snap"
+      // de ScrollTrigger) porque ambos peleaban por la posición y la página saltaba.
+      let tAjuste;
+      // Solo con el scroll detenido. Dentro de cada transición entre escenas:
+      //   ≥ 70 % recorrido → completa hacia la escena siguiente
+      //   ≤ 30 % recorrido → vuelve a la escena actual
+      //   entre 30 % y 70 % → no hace nada (respeta la posición del usuario)
+      const UMBRAL_AVANCE = 0.7, UMBRAL_RETROCESO = 0.3;
+      const ajustar = () => {
+        const st = tl.scrollTrigger;
+        if (!st) return;
+        if (VT.lenis && VT.lenis.isScrolling) { tAjuste = setTimeout(ajustar, 150); return; } // aún desplazándose
+        // Posición real (destino de Lenis o scroll nativo), no el progreso en caché de ScrollTrigger
+        const y = VT.lenis ? VT.lenis.targetScroll : window.scrollY;
+        if (y <= st.start || y >= st.end) return;
+        const tramos = n - 1;
+        const pos = ((y - st.start) / (st.end - st.start)) * tramos; // p. ej. 0.8 = 80 % de la primera transición
+        const tramo = Math.floor(pos);
+        const recorrido = pos - tramo;
+        let objetivo = null;
+        if (recorrido >= UMBRAL_AVANCE) objetivo = tramo + 1;
+        else if (recorrido <= UMBRAL_RETROCESO) objetivo = tramo;
+        if (objetivo === null) return;
+        const destino = st.start + (st.end - st.start) * (objetivo / tramos);
+        if (Math.abs(y - destino) < 3) return;
+        if (VT.lenis) VT.lenis.scrollTo(destino, { duration: 0.6 });
+        else window.scrollTo({ top: destino, behavior: 'smooth' });
+      };
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: '.convergencia__escenario', start: 'top top', end: '+=' + (n - 1) * 110 + '%',
           pin: true, scrub: 0.7, anticipatePin: 1,
-          snap: { snapTo: 1 / (n - 1), duration: { min: 0.2, max: 0.6 }, ease: 'power1.inOut' },
-          onUpdate: (self) => marcar(Math.round(self.progress * (n - 1)))
+          onUpdate: (self) => {
+            marcar(Math.round(self.progress * (n - 1)));
+            clearTimeout(tAjuste);
+            tAjuste = setTimeout(ajustar, 250); // espera a que el gesto (rueda o trackpad) termine
+          }
         }
       });
-      // Transición secuencial: la escena saliente termina de desvanecerse ANTES de que entre la siguiente
-      // (pausa breve en blanco entre ambas), así nunca se leen dos textos superpuestos.
+      // Transición secuencial: la escena saliente (texto + video de fondo) termina de desvanecerse ANTES
+      // de que entre la siguiente (pausa breve en blanco), así nunca se leen dos textos superpuestos.
       for (let i = 1; i < n; i++) {
         tl.to(escenasEl[i - 1], { opacity: 0, y: -60, duration: 0.45, ease: 'power2.in' })
-          .to(escenasEl[i - 1].querySelector('.orbe'), { scale: 0.7, duration: 0.45, ease: 'power2.in' }, '<')
+          .to(fondos[i - 1] || {}, { opacity: 0, duration: 0.45, ease: 'power2.in' }, '<')
           .fromTo(escenasEl[i], { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, '>0.1')
-          .fromTo(escenasEl[i].querySelector('.orbe'), { scale: 1.25 }, { scale: 1, duration: 0.45, ease: 'power2.out' }, '<');
+          .fromTo(fondos[i] || {}, { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power2.out' }, '<');
       }
       tl.to('.convergencia__barra', { scaleY: 1, ease: 'none', duration: tl.duration() }, 0);
 
@@ -220,7 +248,8 @@
         seccion.removeEventListener('focusin', alEnfocar);
         seccion.classList.remove('convergencia--pin');
         gsap.set(escenasEl, { clearProps: 'all' });
-        gsap.set($$('.orbe', seccion), { clearProps: 'all' });
+        gsap.set(fondos, { clearProps: 'all' });
+        videosFondo.forEach((v) => { if (v) { v.pause(); delete v.dataset.activo; } });
       };
     });
   })();

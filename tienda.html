@@ -362,7 +362,10 @@
        =================================================================== -->
 
   <main id="contenido" tabindex="-1">
-    <section class="hero-pagina hero-pagina--tienda" aria-labelledby="titulo-tienda">
+    <section class="hero-pagina hero-pagina--tienda hero-pagina--video" aria-labelledby="titulo-tienda">
+      <!-- Video decorativo de fondo: el MP4 lo asigna js/main.js (no se descarga con movimiento reducido ni ahorro de datos; queda el poster) -->
+      <video class="hero-pagina__video" autoplay muted loop playsinline preload="metadata" poster="video/equipos-poster.jpg" data-src="video/equipos.mp4" aria-hidden="true" tabindex="-1"></video>
+      <div class="hero-pagina__capa" aria-hidden="true"></div>
       <div class="contenedor">
         <p class="antetitulo">Tienda</p>
         <h1 id="titulo-tienda">Equipos para que tu empresa <em>no se detenga.</em></h1>

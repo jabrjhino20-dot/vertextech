@@ -362,7 +362,10 @@
        =================================================================== -->
 
   <main id="contenido" tabindex="-1">
-    <section class="hero-pagina" aria-labelledby="titulo-servicios">
+    <section class="hero-pagina hero-pagina--video" aria-labelledby="titulo-servicios">
+      <!-- Video decorativo de fondo: el MP4 lo asigna js/main.js (no se descarga con movimiento reducido ni ahorro de datos; queda el poster) -->
+      <video class="hero-pagina__video" autoplay muted loop playsinline preload="metadata" poster="video/soporte-poster.jpg" data-src="video/soporte.mp4" aria-hidden="true" tabindex="-1"></video>
+      <div class="hero-pagina__capa" aria-hidden="true"></div>
       <div class="contenedor">
         <p class="antetitulo">Servicios</p>
         <h1 id="titulo-servicios">Tu tecnología funcionando, <em>protegida y al día.</em></h1>

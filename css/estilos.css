@@ -498,6 +498,25 @@ body.pedido-abierto .wa-flotante { opacity: 0; visibility: hidden; }
   content: ""; position: absolute; z-index: -1; width: 720px; height: 720px; right: -240px; top: -200px; border-radius: 50%;
   background: radial-gradient(circle, var(--cian-30), transparent 62%);
 }
+/* Héroes interiores con video de fondo (tienda, servicios, IA): misma técnica que el inicio */
+.hero-pagina__video { position: absolute; inset: 0; z-index: -3; width: 100%; height: 100%; object-fit: cover; object-position: 70% 50%; pointer-events: none; }
+/* Capa índigo, contraste calculado sobre el peor fotograma (blanco puro):
+   al 84 % → texto blanco 7,9:1, texto blanco 72 % ≥ 5:1, cian grande del titular 3,4:1 (AA texto grande). */
+.hero-pagina__capa { position: absolute; inset: 0; z-index: -2; pointer-events: none; background: rgba(27, 42, 107, .84); }
+@media (min-width: 1024px) {
+  /* Escritorio: índigo fuerte bajo el texto y más liviano a la derecha para que se vea el video.
+     --fin-texto = borde izquierdo del contenedor + gutter (40) + ancho máximo del texto (~900).
+     Hasta ahí la capa no baja de 86 % → peor fotograma (blanco): texto blanco 8,7:1, blanco 72 % ≈ 6:1,
+     cian grande del titular 3,7:1. Después desciende hasta 50 % en el borde derecho, donde no hay texto. */
+  .hero-pagina__capa {
+    --fin-texto: calc(max(0px, (100% - 1400px) / 2) + 940px);
+    background: linear-gradient(90deg, rgba(27, 42, 107, .92) 0, rgba(27, 42, 107, .86) var(--fin-texto), rgba(27, 42, 107, .5) 100%);
+  }
+}
+/* Texto pequeño sobre video: el antetítulo pasa a blanco (el cian pequeño no alcanzaría 4,5:1 en el peor fotograma) */
+.hero-pagina.hero-pagina--video .antetitulo, .hero-inicio .antetitulo { color: var(--blanco); }
+/* En los héroes con video, el video reemplaza la red de nodos decorativa */
+.hero-pagina.hero-pagina--video::before { display: none; }
 .hero-pagina h1 { color: var(--blanco); font-size: var(--fs-h1); max-width: 16ch; margin-bottom: 20px; }
 .hero-pagina h1 em { font-style: normal; color: var(--cian); }
 .hero-pagina__lead { font-size: var(--fs-lead); max-width: 58ch; margin-bottom: 32px; }
@@ -655,7 +674,6 @@ fieldset.campo { border: 0; margin: 0; padding: 0; min-width: 0; }
 .hero-inicio__canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
 @media (max-width: 1023px) { .hero-inicio__canvas { display: none; } } /* partículas solo en escritorio */
 .hero-inicio__contenido { position: relative; }
-.hero-inicio .antetitulo { color: var(--cian); }
 .hero-inicio__titulo { font-size: var(--fs-display); line-height: .98; letter-spacing: -.035em; color: var(--blanco); margin: 20px 0 28px; max-width: none; }
 .hero-inicio__titulo .linea { display: block; overflow: hidden; padding-bottom: .1em; margin-bottom: -.1em; }
 .hero-inicio__titulo .linea > span { display: inline-block; }
@@ -703,42 +721,36 @@ fieldset.campo { border: 0; margin: 0; padding: 0; min-width: 0; }
 .escena__lista { display: grid; gap: 10px; margin-bottom: 32px; }
 .escena__lista li { display: flex; gap: 10px; align-items: flex-start; color: var(--blanco); }
 .escena__lista .icono { color: var(--cian); width: 22px; height: 22px; margin-top: 1px; }
-/* overflow: clip recorta la caja invisible de la órbita al rotar (evita desbordamiento horizontal) */
-.escena__visual { display: flex; justify-content: center; overflow: clip; padding: 32px 0; }
+/* Imagen de la tarjeta (móvil y sin animaciones): poster del video de la escena */
+.escena__visual { display: block; order: -1; } /* arriba del texto: la tarjeta siguiente, al apilarse, tapa la parte inferior */
+.escena__poster { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radio); border: 1px solid var(--blanco-12); }
 
-/* Orbe: anillos concéntricos con 4 chips en órbita (nunca 3 nodos) */
-.orbe { position: relative; width: min(76%, 420px); aspect-ratio: 1; margin: 24px 0; }
-.orbe__anillo { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--cian-30); }
-.orbe__anillo--2 { inset: 15%; border-style: dashed; border-color: var(--blanco-20); }
-.orbe__anillo--3 { inset: 30%; border-color: var(--cian-50); box-shadow: inset 0 0 60px var(--cian-30), 0 0 80px var(--cian-18); }
-.orbe__nucleo { position: absolute; inset: 37%; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle, var(--cian) 0 48%, var(--cian-30) 70%, transparent 72%); color: var(--indigo); }
-.orbe__nucleo .icono { width: 46%; height: 46%; stroke-width: 1.6; }
-.orbe__orbita { position: absolute; inset: 0; }
-.orbe__chip { position: absolute; width: 0; height: 0; }
-.orbe__chip:nth-child(1) { left: 50%; top: 0; }
-.orbe__chip:nth-child(2) { left: 100%; top: 50%; }
-.orbe__chip:nth-child(3) { left: 50%; top: 100%; }
-.orbe__chip:nth-child(4) { left: 0; top: 50%; }
-.orbe__chip > span {
-  display: inline-block; transform: translate(-50%, -50%); white-space: nowrap;
-  padding: 8px 14px; border-radius: var(--pill); background: var(--indigo); border: 1px solid var(--cian-50);
-  color: var(--blanco); font-family: var(--fuente-titulos); font-weight: 500; font-size: clamp(.75rem, .7rem + .3vw, .9375rem);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .orbe__orbita { animation: girar 48s linear infinite; }
-  .orbe__chip > span { animation: girar-inverso 48s linear infinite; }
-  .orbe__anillo--2 { animation: girar 90s linear infinite reverse; }
-}
-@keyframes girar { to { transform: rotate(360deg); } }
-@keyframes girar-inverso { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(-360deg); } }
+/* Fondos de video por escena: solo en modo pin (escritorio con GSAP) */
+.convergencia__fondos { display: none; }
 
-/* Modo pin (escritorio con GSAP): escenas superpuestas en un escenario de 100vh */
+/* Modo pin (escritorio con GSAP): escenas superpuestas en un escenario de 100vh con video de fondo */
 .convergencia--pin { padding-bottom: 0; }
-.convergencia--pin .convergencia__escenario { height: 100vh; display: flex; align-items: center; }
-.convergencia--pin .convergencia__grid { display: grid; grid-template-columns: 200px 1fr; gap: 48px; align-items: center; }
+.convergencia--pin .convergencia__escenario { position: relative; overflow: hidden; height: 100vh; display: flex; align-items: center; }
+/* --fin-texto = borde izquierdo del contenedor + gutter (40) + columna de progreso (200) + gap (48) + texto (600) + aire (22) */
+.convergencia--pin .convergencia__fondos { --fin-texto: calc(max(0px, (100% - 1400px) / 2) + 910px); display: block; position: absolute; inset: 0; z-index: 0; background: var(--indigo); }
+/* El video ocupa solo la franja derecha (empieza 140 px antes del fin del texto, bajo la capa sólida, para ocultar su borde).
+   Así el recorte es menor y el sujeto queda en la zona visible. */
+.convergencia__fondo { position: absolute; top: 0; bottom: 0; right: 0; left: calc(var(--fin-texto) - 140px); }
+.convergencia__fondo video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+.convergencia__fondo:nth-child(1) video { object-position: 34% 50%; } /* equipos: laptops encendidas y rack (izquierda del cuadro) */
+.convergencia__fondo:nth-child(2) video { object-position: 14% 50%; } /* soporte: conexión del cable al rack y luces */
+.convergencia__fondo:nth-child(3) video { object-position: 68% 50%; } /* IA: red de partículas */
+/* Capa índigo: SÓLIDA (100 %) hasta donde termina el texto y luego se desvanece sobre el video.
+   Al ser sólida bajo el texto, el contraste AA no depende del fotograma. */
+.convergencia__capa {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, var(--indigo) 0, var(--indigo) var(--fin-texto), rgba(27, 42, 107, .55) calc(var(--fin-texto) + 3%), rgba(27, 42, 107, 0) calc(var(--fin-texto) + 8%));
+}
+.convergencia--pin .convergencia__grid { position: relative; z-index: 1; display: grid; grid-template-columns: 200px 1fr; gap: 48px; align-items: center; }
 .convergencia--pin .convergencia__escenas { display: grid; margin-top: 0; }
-.convergencia--pin .escena { grid-area: 1 / 1; position: relative; top: auto; min-height: 0; padding: 0; background: none; border: 0; box-shadow: none; }
-.convergencia--pin .convergencia__progreso { display: flex; gap: 20px; align-items: stretch; }
+.convergencia--pin .escena { grid-area: 1 / 1; position: relative; top: auto; grid-template-columns: 1fr; min-height: 0; padding: 0; background: none; border: 0; box-shadow: none; }
+.convergencia--pin .escena__texto { max-width: 600px; }
+.convergencia--pin .escena__visual { display: none; }.convergencia--pin .convergencia__progreso { display: flex; gap: 20px; align-items: stretch; }
 .convergencia__riel { position: relative; width: 2px; background: var(--blanco-12); border-radius: 2px; }
 .convergencia__barra { position: absolute; inset: 0; background: var(--cian); transform-origin: top; transform: scaleY(0); box-shadow: 0 0 12px var(--cian); }
 .convergencia__progreso ol { display: grid; gap: 40px; padding: 4px 0; }
